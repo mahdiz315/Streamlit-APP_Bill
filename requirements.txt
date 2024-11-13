@@ -1,4 +1,5 @@
 streamlit
+pillow==8.4.0 
 pdfplumber
 altair
 xlsxwriter
