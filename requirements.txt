@@ -3,8 +3,7 @@ pdfplumber
 altair
 xlsxwriter
 openly
-re
-panda 
+pandas 
 numpy
 datetime
 time
