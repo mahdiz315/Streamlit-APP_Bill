@@ -5,7 +5,5 @@ xlsxwriter
 openly
 pandas 
 numpy
-datetime
-time
 matplotlib
 
