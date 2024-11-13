@@ -1,0 +1,17 @@
+# Ignore virtual environment and cache files
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Ignore environment variables
+.env
+
+# Ignore large data files, models (if you don’t want to upload them)
+*.h5
+*.csv
+*.xlsx
+
+# Ignore system files
+.DS_Store
+.idea/

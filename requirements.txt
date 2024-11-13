@@ -1,0 +1,12 @@
+streamlit
+pdfplumber
+altair
+xlsxwriter
+openly
+re
+panda 
+numpy
+datetime
+time
+matplotlib
+
