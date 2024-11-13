@@ -7,4 +7,4 @@ openly
 pandas 
 numpy
 matplotlib
-
+tornado==6.1  
