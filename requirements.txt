@@ -8,3 +8,4 @@ pandas
 numpy
 matplotlib
 tornado==6.1  
+pip==24.3.1
