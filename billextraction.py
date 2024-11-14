@@ -1893,7 +1893,7 @@ def app():
     coefficients = [0.5904, 0.6416, 0.6672, 0.6672, 0.6928, 0.7184, 0.7952, 0.8464, 1.0, 0.7696, 0.744, 0.6672]
     # Ask for working hours and working days as inputs
    # Using st.text_input for direct entry
-    working_hours = int(st.text_input("Enter the working hours per day:", value="8"))
+    working_hours = int(st.text_input("Enter the working hours per day:", value="11"))
     working_days = int(st.text_input("Enter the working days per week:", value="5"))
 
 
