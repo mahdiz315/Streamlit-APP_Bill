@@ -2143,7 +2143,7 @@ def app():
             st.table(recommendation_df)
             
             #st.write("179D Commercial Buildings Energy-Efficiency Tax Deduction:")
-            st.markdown("**Table Description of each Recommendation:**")
+            st.markdown("**Table Description of each Recommendation#:**")
        
        
        
@@ -2153,11 +2153,11 @@ def app():
                 #st.write("If you are eligible for the 179D Commercial Buildings Energy-Efficiency Tax Deduction and choose to upgrade your windows, you could significantly reduce your energy consumption and costs. By improving your building's windows, you can achieve a reduction of at least 10% in cooling consumption, which typically accounts for about 30% to 50% of your building's total energy consumption. This not only enhances energy efficiency but also contributes to lower utility bills, making it a financially beneficial investment. ")
             st.markdown("""
                 <div style="text-align: justify;">
-                    <p>0- It means that by paying on time, you can save the entire amount that would otherwise be spent on late payment fees over the year through this AR.</p>
-                    <p>1- We calculated the expected demand by dividing the total consumption by the total operating hours and then compared it to the actual demand on the bill. This AR demonstrates the potential for total annual savings by reducing maximum demand through any suitable solution.</p>
-                    <p>2- If your account is on a Time-of-Use plan, you have the potential for annual savings by switching to a Standard Rate.</p>
-                    <p>3- If your account is on a Time-of-Use plan, you can reduce your bill by shifting usage from peak to off-peak hours. For example, we demonstrated an annual savings by reducing 10% of on-peak consumption and shifting it to off-peak hours.</p>
-                    <p>4- Demand charges are typically based on the maximum demand (in kW) recorded at a single meter during peak usage times. For companies with multiple meters, each meter is assessed individually for its peak demand.
+                    <p>#0- It means that by paying on time, you can save the entire amount that would otherwise be spent on late payment fees over the year through this AR.</p>
+                    <p>#1- We calculated the expected demand by dividing the total consumption by the total operating hours and then compared it to the actual demand on the bill. This AR demonstrates the potential for total annual savings by reducing maximum demand through any suitable solution.</p>
+                    <p>#2- If your account is on a Time-of-Use plan, you have the potential for annual savings by switching to a Standard Rate.</p>
+                    <p>#3- If your account is on a Time-of-Use plan, you can reduce your bill by shifting usage from peak to off-peak hours. For example, we demonstrated an annual savings by reducing 10% of on-peak consumption and shifting it to off-peak hours.</p>
+                    <p>#4- Demand charges are typically based on the maximum demand (in kW) recorded at a single meter during peak usage times. For companies with multiple meters, each meter is assessed individually for its peak demand.
 
 By consolidating meters, the total demand is measured across the entire facility or company, which can potentially reduce the overall peak demand. This occurs because different parts of the facility may reach their peak usage at different times, smoothing out the overall demand. As a result, the combined peak demand could be lower than the sum of the individual peaks. For example, we estimate that this consolidation could reduce the bill by approximately 10%. to</p>
                     <p>5- If you are eligible for the 179D Commercial Buildings Energy-Efficiency Tax Deduction and choose to upgrade your windows, you could significantly reduce your energy consumption and costs. By improving your building's windows, you can achieve a reduction of at least 10% in cooling consumption, which typically accounts for about 30% to 50% of your building's total energy consumption. This not only enhances energy efficiency but also contributes to lower utility bills, making it a financially beneficial investment.</p>
