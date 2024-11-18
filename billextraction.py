@@ -2117,7 +2117,7 @@ def app():
             not_available="NA"
             # Prepare the second table (Recommendation)
             data_recommendation = {
-                "Recommendation Type": [ "Late payment charge", "Max Demand Recommendation","Change Rate Recommendation","Load shifting: 10% On Peak Consumption to Off peak ","Decrease number of Account","Annual Cost Savings from Energy Reduction from Tax Benefit 179D(1)"],
+                "Recommendation Type": [ "Late payment charge", "Max Demand Reduction","Change Rate Recommendation","Load shifting: 10% On Peak Consumption to Off peak ","Decrease number of Account","Annual Cost Savings from Energy Reduction from Tax Benefit 179D(1)"],
                 "Value": [ recommendation_value, demand_recommendation,Change_Rate_Recomendation,Recommendation_move_on_off_1,meter_recommendation,f"${annual_cost_energy_reduction:.2f}"],
                 "Pay Back":[Late_payback,Demand_payback,Rate_paayback,on_paayback,meter_payback,tax_payback],
                 "kWh Saving":[not_available,not_available,"-" ,"-",not_available,energy_reduction],
