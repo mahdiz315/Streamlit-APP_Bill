@@ -1874,7 +1874,7 @@ def app():
     html_code = f'<img src="data:image/jpeg;base64,{img_base64}" style="width:20%;">'
     st.markdown(html_code, unsafe_allow_html=True)
 
-    st.title("Extractor Electricity Bills (Commercial and Industrial Building) version1")
+    st.title("Extractor Electricity Bills (Commercial and Industrial Building) version1.0")
 
     # Input for number of accounts
     num_accounts = st.number_input("Enter the number of accounts (folders):", min_value=1, step=1)
@@ -2135,6 +2135,8 @@ def app():
 
             # Display the second table (Recommendation)
             #st.write("Recommendation:")
+            recommendation_df.index = recommendation_df.index + 1
+
             st.markdown("**Recommendation:**")
 
             #st.write("Recommendation number 4: It should be more deep analaysis but we calculated th")
