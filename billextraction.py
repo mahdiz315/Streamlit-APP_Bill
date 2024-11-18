@@ -2018,8 +2018,7 @@ def app():
                 f"Account Number ({account_number})": rate for account_number, rate in Rate_account.items()
             }
             
-            print("helooooo")
-            print(account_rates)
+            
 
             # Prepare the first table data for rates
             data_rates = {
@@ -2153,49 +2152,60 @@ def app():
                 #st.write("If you are eligible for the 179D Commercial Buildings Energy-Efficiency Tax Deduction and choose to upgrade your windows, you could significantly reduce your energy consumption and costs. By improving your building's windows, you can achieve a reduction of at least 10% in cooling consumption, which typically accounts for about 30% to 50% of your building's total energy consumption. This not only enhances energy efficiency but also contributes to lower utility bills, making it a financially beneficial investment. ")
             st.markdown("""
                 <div style="text-align: justify;">
-                    <p>#0- It means that by paying on time, you can save the entire amount that would otherwise be spent on late payment fees over the year through this AR.</p>
-                    <p>#1- We calculated the expected demand by dividing the total consumption by the total operating hours and then compared it to the actual demand on the bill. This AR demonstrates the potential for total annual savings by reducing maximum demand through any suitable solution.</p>
-                    <p>#2- If your account is on a Time-of-Use plan, you have the potential for annual savings by switching to a Standard Rate.</p>
-                    <p>#3- If your account is on a Time-of-Use plan, you can reduce your bill by shifting usage from peak to off-peak hours. For example, we demonstrated an annual savings by reducing 10% of on-peak consumption and shifting it to off-peak hours.</p>
-                    <p>#4- Demand charges are typically based on the maximum demand (in kW) recorded at a single meter during peak usage times. For companies with multiple meters, each meter is assessed individually for its peak demand.
+                    <p>0- It means that by paying on time, you can save the entire amount that would otherwise be spent on late payment fees over the year through this AR.</p>
+                </div>
+            """, unsafe_allow_html=True)
 
-By consolidating meters, the total demand is measured across the entire facility or company, which can potentially reduce the overall peak demand. This occurs because different parts of the facility may reach their peak usage at different times, smoothing out the overall demand. As a result, the combined peak demand could be lower than the sum of the individual peaks. For example, we estimate that this consolidation could reduce the bill by approximately 10%. to</p>
+            st.markdown("""
+                <div style="text-align: justify;">
+                    <p>1- We determined the expected demand by dividing the total consumption by the total operating hours and then compared it with the actual demand indicated on the bill. This analysis highlights the potential for total annual savings by reducing the maximum demand through appropriate solutions. If the max_Expectation exceeds the max_Demand, we recommend reducing the demand to 90\% of the max_Demand to achieve cost savings.</p>
+                </div>
+            """, unsafe_allow_html=True)
+
+            # Add Table for 1
+            st.table({"Description": ["Potential Annual Savings from Maximum Demand Reduction"],
+                    "Formula": ["(Max_Demand - Max_Demand_Expectation or 0.9 Max_Demand) * Demand_Rate"]})
+
+            st.markdown("""
+                <div style="text-align: justify;">
+                    <p>2- If your account is on a Time-of-Use plan, you have the potential for annual savings by switching to a Standard Rate.</p>
+                </div>
+            """, unsafe_allow_html=True)
+
+            # Add Table for 2
+            st.table({"Description": ["Savings from Change Rate Recommendation"],
+                    "Formula": ["(Present Rate - find another Rate) * Consumption_kWh ....."]})
+
+            st.markdown("""
+                <div style="text-align: justify;">
+                    <p>3- If your account is on a Time-of-Use plan, you can reduce your bill by shifting usage from peak to off-peak hours. For example, we demonstrated an annual savings by reducing 10% of on-peak consumption and shifting it to off-peak hours.</p>
+                </div>
+            """, unsafe_allow_html=True)
+
+            # Add Table for 3
+            st.table({"Description": ["Savings by Shifting 10% On-Peak to Off-Peak"],
+                    "Formula": ["(On_Peak_Rate - Off_Peak_Rate) * 10% On Peak Consumption_kWh"]})
+
+            st.markdown("""
+                <div style="text-align: justify;">
+                    <p>4- Demand charges are typically based on the maximum demand (in kW) recorded at a single meter during peak usage times. For companies with multiple meters, each meter is assessed individually for its peak demand.</p>
+                    <p>By consolidating meters, the total demand is measured across the entire facility or company, which can potentially reduce the overall peak demand. This occurs because different parts of the facility may reach their peak usage at different times, smoothing out the overall demand. As a result, the combined peak demand could be lower than the sum of the individual peaks. For example, we estimate that this consolidation could reduce the bill by approximately 10%.</p>
+                </div>
+            """, unsafe_allow_html=True)
+
+            # Add Table for 4
+            #st.table({"Description": ["Savings from Meter Consolidation"],
+             #       "Formula": ["10% * Total_Energy_Charges"]})
+
+            st.markdown("""
+                <div style="text-align: justify;">
                     <p>5- If you are eligible for the 179D Commercial Buildings Energy-Efficiency Tax Deduction and choose to upgrade your windows, you could significantly reduce your energy consumption and costs. By improving your building's windows, you can achieve a reduction of at least 10% in cooling consumption, which typically accounts for about 30% to 50% of your building's total energy consumption. This not only enhances energy efficiency but also contributes to lower utility bills, making it a financially beneficial investment.</p>
                 </div>
-                """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-           
-
-            
-            # # If they use regular windows (1), calculate 10% energy reduction for tax savings
-            # if window_value == 1:
-            #     #st.write("179D Commercial Buildings Energy-Efficiency Tax Deduction:")
-            #     st.markdown("**1- 179D Commercial Buildings Energy-Efficiency Tax Deduction:**")
-
-            #     #st.write("If you are eligible for the 179D Commercial Buildings Energy-Efficiency Tax Deduction and choose to upgrade your windows, you could significantly reduce your energy consumption and costs. By improving your building's windows, you can achieve a reduction of at least 10% in cooling consumption, which typically accounts for about 30% to 50% of your building's total energy consumption. This not only enhances energy efficiency but also contributes to lower utility bills, making it a financially beneficial investment. ")
-            #     st.markdown("""
-            #     <div style="text-align: justify;">
-            #     If you are eligible for the 179D Commercial Buildings Energy-Efficiency Tax Deduction and choose to upgrade your windows, you could significantly reduce your energy consumption and costs. By improving your building's windows, you can achieve a reduction of at least 10% in cooling consumption, which typically accounts for about 30% to 50% of your building's total energy consumption. This not only enhances energy efficiency but also contributes to lower utility bills, making it a financially beneficial investment.
-            #     </div>
-            #     """, unsafe_allow_html=True)
-            #     # Calculate energy reduction due to potential tax eligibility
-            #     #energy_reduction = TOTAL_ENERGY_CONSUMPTION * 0.3*0.1  # 10% energy reduction
-            #     #annual_cost_energy_reduction = energy_reduction * Electricity_Rate  # cost saving
-
-
-            #     # Prepare the first table data for rates
-            #     data_Tax = {
-            #         "Description": ["Energy Reduction from Tax Benefit (10%)", "Annual Cost Savings from Energy Reduction"],
-            #         "Value": [f"{energy_reduction:.2f} kWh", f"${annual_cost_energy_reduction:.2f}"]
-            #     }
-
-            #     # Convert the data into a DataFrame for the first table
-            #     Tax_df = pd.DataFrame(data_Tax)
-
-            #     # Display the first table (Rates Information)
-                
-            #     st.table(Tax_df)
-
+            # Add Table for 5
+            st.table({"Description": ["Savings from 179D Tax Deduction"],
+                    "Formula": ["10% * Cooling_Consumption_kWh * Electricity_Rate"]})
             
 
             
