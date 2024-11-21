@@ -7,7 +7,7 @@ import numpy as np
 import xlsxwriter
 from openpyxl.styles import PatternFill
 from openpyxl.worksheet.dimensions import SheetFormatProperties
-from datetime import datetime
+from datetime import datetime , timedelta
 import datetime as dt 
 import matplotlib.pyplot as plt
 import time
@@ -1870,11 +1870,11 @@ def app():
             data = file.read()
         return base64.b64encode(data).decode()
 
-    img_base64 = get_base64_image("Logo-University-of-Miami.jpg")
+    img_base64 = get_base64_image(r"C:\Users\mxz881\Desktop\Logo-University-of-Miami.jpg")
     html_code = f'<img src="data:image/jpeg;base64,{img_base64}" style="width:20%;">'
     st.markdown(html_code, unsafe_allow_html=True)
 
-    st.title("Extractor Electricity Bills (Commercial and Industrial Building) version1.00")
+    st.title("Extractor Electricity Bills (Commercial and Industrial Building)")
 
     # Input for number of accounts
     num_accounts = st.number_input("Enter the number of accounts (folders):", min_value=1, step=1)
@@ -1893,12 +1893,157 @@ def app():
     coefficients = [0.5904, 0.6416, 0.6672, 0.6672, 0.6928, 0.7184, 0.7952, 0.8464, 1.0, 0.7696, 0.744, 0.6672]
     # Ask for working hours and working days as inputs
    # Using st.text_input for direct entry
-    working_hours = int(st.text_input("Enter the working hours per day:", value="11"))
-    working_days = int(st.text_input("Enter the working days per week:", value="5"))
+    #working_hours = int(st.text_input("Enter the working hours per day:", value="8"))
+    #working_days = int(st.text_input("Enter the working days per week:", value="5"))
 
 
     # Calculate operation hours
-    operation_hours = working_hours * working_days * 52  # Assuming 52 weeks in a year
+    #operation_hours = working_hours * working_days * 52  # Assuming 52 weeks in a year
+    
+    st.markdown("### Working Hours")
+
+    # Define shifts and day types
+    shifts = ["1st Shift", "2nd Shift", "3rd Shift"]
+    days = ["Monday - Friday", "Saturday", "Sunday"]
+
+    # Initialize session state for shifts and days
+    if "working_hours_data" not in st.session_state:
+        st.session_state["working_hours_data"] = {
+            "Shift": [],
+            "Day Type": [],
+            "From": [],
+            "To": []
+        }
+        # Add initial values for all shifts and days
+        for shift in shifts:
+            for day in days:
+                st.session_state[f"{shift}_{day}_start"] = dt.time(6, 30)  # Default start time
+                st.session_state[f"{shift}_{day}_end"] = dt.time(15, 0)  # Default end time
+
+    # Ask if Saturday and Sunday are operating days
+    saturday_operating = st.checkbox("Saturday an operating day", value=True)
+    sunday_operating = st.checkbox("Sunday an operating day", value=True)
+
+    # Ask if each shift is operating
+    shift_checks = {}
+    for shift in shifts:
+        shift_checks[shift] = st.checkbox(f"{shift} an operating shift", value=True)
+
+    # Create a dictionary to store inputs
+    working_hours_data = {
+        "Shift": [],
+        "Day Type": [],
+        "From": [],
+        "To": []
+    }
+
+    # Loop through each shift and day type to create input fields
+    for shift in shifts:
+        if not shift_checks[shift]:
+            continue  # Skip shifts that are not checked
+
+        for day in days:
+            if day == "Saturday" and not saturday_operating:
+                continue  # Skip Saturday if it's not an operating day
+            if day == "Sunday" and not sunday_operating:
+                continue  # Skip Sunday if it's not an operating day
+
+            col1, col2, col3 = st.columns([1, 2, 2])
+            with col1:
+                st.write(f"{shift} - {day}")
+            with col2:
+                start_time = st.time_input(
+                    f"Start time ({shift} - {day})",
+                    value=st.session_state[f"{shift}_{day}_start"],
+                    key=f"{shift}_{day}_start_input"
+                )
+            with col3:
+                end_time = st.time_input(
+                    f"End time ({shift} - {day})",
+                    value=st.session_state[f"{shift}_{day}_end"],
+                    key=f"{shift}_{day}_end_input"
+                )
+            # Update session state with user inputs
+            st.session_state[f"{shift}_{day}_start"] = start_time
+            st.session_state[f"{shift}_{day}_end"] = end_time
+
+            # Append the data (ensure day data is added to the dictionary)
+            working_hours_data["Shift"].append(shift)
+            working_hours_data["Day Type"].append(day)
+            working_hours_data["From"].append(str(start_time))
+            working_hours_data["To"].append(str(end_time))
+
+    # Create a DataFrame from the collected inputs
+    working_hours_df = pd.DataFrame(working_hours_data)
+
+    # Function to calculate hours
+    def calculate_hours(start_time_str, end_time_str): 
+        """
+        Calculate the duration in hours between start and end times.
+        Handles overnight shifts.
+        """
+        # Adjust format to handle potential seconds
+        if ":" in start_time_str and start_time_str.count(":") == 2:
+            time_format = "%H:%M:%S"  # Format with hours, minutes, and seconds
+        else:
+            time_format = "%H:%M"  # Format with hours and minutes
+
+        # Convert the string inputs to datetime.time objects
+        start_time = datetime.strptime(start_time_str, time_format).time()
+        end_time = datetime.strptime(end_time_str, time_format).time()
+        
+        # Combine with today's date
+        start = datetime.combine(datetime.today(), start_time)
+        end = datetime.combine(datetime.today(), end_time)
+        
+        # Adjust for overnight shifts
+        if end <= start:
+            end += timedelta(days=1)
+        
+        # Calculate the difference in hours
+        return (end - start).total_seconds() / 3600
+
+    # Calculate total operation hours
+    def calculate_total_operation_hours(working_hours_df):
+        """
+        Calculate total operation hours per year based on the shifts and day types.
+        """
+        total_operation_hours = 0
+        for _, row in working_hours_df.iterrows():
+            start_time = row["From"]
+            end_time = row["To"]
+            day_type = row["Day Type"]
+            
+            # Skip rows with invalid times (e.g., 00:00 to 00:00)
+            if start_time == "00:00:00" and end_time == "00:00:00":
+                continue
+            
+            # Calculate hours for each shift
+            daily_hours = calculate_hours(start_time, end_time)
+            
+            # Multiply hours based on day type
+            if day_type == "Monday - Friday":
+                total_operation_hours += daily_hours * 5  # 5 weekdays
+            elif day_type == "Saturday":
+                total_operation_hours += daily_hours * 1  # 1 Saturday
+            elif day_type == "Sunday":
+                total_operation_hours += daily_hours * 1  # 1 Sunday
+
+        # Multiply by 52 weeks in a year
+        return total_operation_hours * 52
+
+    # Display collected working hours
+    st.markdown("### Collected Working Hours")
+    working_hours_df.index = working_hours_df.index + 1
+    st.dataframe(working_hours_df)
+
+    # Calculate and display total operation hours
+    total_operation_hours = calculate_total_operation_hours(working_hours_df)
+    st.markdown(f"### Total Operation Hours (per year): {total_operation_hours:.2f} hours")
+    operation_hours=total_operation_hours
+    
+    
+    
     # Dictionary to store the uploaded files for each account (folder)
     uploaded_files_by_account = {}
 
@@ -2018,22 +2163,21 @@ def app():
                 f"Account Number ({account_number})": rate for account_number, rate in Rate_account.items()
             }
             
-            
-
             # Prepare the first table data for rates
             data_rates = {
-                "Rate Type": list(account_rates.keys()) +["Demand Rate(Consolidate) ($/kW)", "Electricity Rate(Consolidate) ($/kWh)"] ,
-                "Value": list(account_rates.values())+ [Demand_Rate, Electricity_Rate] 
+                "Name": list(account_rates.keys()) +["Demand Rate(Consolidate) ($/kW)", "Electricity Rate(Consolidate) ($/kWh)"] ,
+                "Information": list(account_rates.values())+ [Demand_Rate, Electricity_Rate] 
             }
 
             # Convert the data into a DataFrame for the first table
             rates_df = pd.DataFrame(data_rates)
-            rates_df["Value"] = rates_df["Value"].astype(str)  # Convert values to string for display
+            rates_df["Information"] = rates_df["Information"].astype(str)  # Convert values to string for display
 
             # Display the first table (Rates Information)
             #st.write("Rates Information:")
-            st.markdown("**Rates Information:**")
-
+            
+            st.markdown("**Account Information:**")
+            rates_df.index=rates_df.index +1
             st.table(rates_df)
 
             if Late_payment_charge > 0:
@@ -2053,16 +2197,22 @@ def app():
             max_demand = max(total_demand_kw_12_months)
             average_demand = sum(total_demand_kw_12_months) / len(total_demand_kw_12_months)
 
-            if max_total_demand > Max_Demand:
-                max_demand = max(total_demand_kw_12_months)
-                annual_saving_Demand= (max_demand -Max_Demand)*Demand_Rate
-                annual_saving_Demand_kw=round(max_demand -Max_Demand)
-                demand_recommendation = f"$ {annual_saving_Demand:.2f}"
-                Demand_payback="Immediate"
+            #if max_total_demand > Max_Demand:
+            #    max_demand = max(total_demand_kw_12_months)
+            #    annual_saving_Demand= (max_demand -Max_Demand)*Demand_Rate
+            #    annual_saving_Demand_kw=round(max_demand -Max_Demand)
+            #    demand_recommendation = f"$ {annual_saving_Demand:.2f}"
+            #    Demand_payback="Immediate"
             if max_demand > average_demand:
-                annual_saving_Demand= (max_demand -average_demand)*Demand_Rate
-                annual_saving_Demand_kw=round(max_demand -average_demand)
-                demand_recommendation = f"$ {annual_saving_Demand:.2f}"
+                #annual_saving_Demand= (max_demand -average_demand)*Demand_Rate
+                
+                annual_saving_Demand= sum(total_demand_kw_12_months*0.05)*Demand_Rate
+                #annual_saving_Demand_kw=round(max_demand -average_demand)
+                #st.write(total_demand_kw_12_months*0.05)
+                annual_saving_Demand_kw=round(sum(total_demand_kw_12_months*0.05))
+                Energy_Reduction_demand_kWh=annual_saving_Demand_kw
+                annual_saving_Demand_kwh=annual_saving_Demand*Electricity_Rate
+                demand_recommendation = f"$ {annual_saving_Demand+annual_saving_Demand_kwh:.2f}"
                 Demand_payback="Immediate"
                
             else:
@@ -2117,10 +2267,11 @@ def app():
             not_available="NA"
             # Prepare the second table (Recommendation)
             data_recommendation = {
-                "Recommendation Type": [ "Late payment charge", "Max Demand Reduction","Change Rate Recommendation","Load shifting: 10% On Peak Consumption to Off peak ","Decrease number of Account","Annual Cost Savings from Energy Reduction from Tax Benefit 179D(1)"],
+                 "No.": [1, 2, 3, 4, 5, 6],
+                "Recommendation Type": [ "Late payment charge", "Max Demand Reduction","Change Rate Recommendation","Load shifting: 10% On Peak Consumption to Off peak ","Decrease number of Account","Annual Cost Savings from Energy Reduction from Tax Benefit 179D(1) or 10\% cooling reduction (by increasing the thermostat setting) "],
                 "Value": [ recommendation_value, demand_recommendation,Change_Rate_Recomendation,Recommendation_move_on_off_1,meter_recommendation,f"${annual_cost_energy_reduction:.2f}"],
                 "Pay Back":[Late_payback,Demand_payback,Rate_paayback,on_paayback,meter_payback,tax_payback],
-                "kWh Saving":[not_available,not_available,"-" ,"-",not_available,energy_reduction],
+                "kWh Saving":[not_available,Energy_Reduction_demand_kWh,"-" ,"-",not_available,energy_reduction],
                 "kW Saving":[not_available,annual_saving_Demand_kw,"-" ,"-",not_available ,not_available]
             }
 
@@ -2128,23 +2279,27 @@ def app():
                             
 
 
+            data_recommendation["No."] = list(range(1, len(data_recommendation["Recommendation Type"]) + 1))
 
             # Convert the recommendation data into a DataFrame
             recommendation_df = pd.DataFrame(data_recommendation)
+            recommendation_df = recommendation_df[["Recommendation Type", "Value", "Pay Back", "kWh Saving", "kW Saving"]]
+
             recommendation_df["Value"] = recommendation_df["Value"].astype(str)  # Convert values to string for display
+            #recommendation_df.reset_index(drop=True, inplace=True)
 
             # Display the second table (Recommendation)
             #st.write("Recommendation:")
-            recommendation_df.index = recommendation_df.index + 1
-
             st.markdown("**Recommendation:**")
 
             #st.write("Recommendation number 4: It should be more deep analaysis but we calculated th")
+            #st.table(recommendation_df.reset_index(drop=True))
+            recommendation_df.index = recommendation_df.index + 1
 
             st.table(recommendation_df)
             
             #st.write("179D Commercial Buildings Energy-Efficiency Tax Deduction:")
-            st.markdown("**Table Description of each Recommendation#:**")
+            st.markdown("**Table Description of each Recommendation:**")
        
        
        
@@ -2154,33 +2309,33 @@ def app():
                 #st.write("If you are eligible for the 179D Commercial Buildings Energy-Efficiency Tax Deduction and choose to upgrade your windows, you could significantly reduce your energy consumption and costs. By improving your building's windows, you can achieve a reduction of at least 10% in cooling consumption, which typically accounts for about 30% to 50% of your building's total energy consumption. This not only enhances energy efficiency but also contributes to lower utility bills, making it a financially beneficial investment. ")
             st.markdown("""
                 <div style="text-align: justify;">
-                    <p>0- It means that by paying on time, you can save the entire amount that would otherwise be spent on late payment fees over the year through this AR.</p>
+                    <p>1- It means that by paying on time, you can save the entire amount that would otherwise be spent on late payment fees over the year through this AR.</p>
                 </div>
             """, unsafe_allow_html=True)
 
             st.markdown("""
                 <div style="text-align: justify;">
-                    <p>1- We determined the expected demand by dividing the total consumption by the total operating hours and then compared it with the actual demand indicated on the bill. This analysis highlights the potential for total annual savings by reducing the maximum demand through appropriate solutions. If the max_Expectation exceeds the max_Demand, we recommend reducing the demand to 90\% of the max_Demand to achieve cost savings.</p>
+                    <p>2- We determined the expected demand reduction by calculating a 5% reduction in demand for each month. Next, we calculated the demand cost and energy cost based on this reduction. Finally, we determined the total cost savings.</p>
                 </div>
             """, unsafe_allow_html=True)
 
             # Add Table for 1
-            st.table({"Description": ["Potential Annual Savings from Maximum Demand Reduction"],
-                    "Formula": ["(Max_Demand - Max_Demand_Expectation or 0.9 Max_Demand) * Demand_Rate"]})
+            st.table({"Description": ["Potential Annual Savings from 5 percent Demand Reduction"],
+                    "Formula": ["sum(max deman of each month*0.05) * Demand Rate + sum(energy reduction for each month)* Energy Rate"]})
 
             st.markdown("""
                 <div style="text-align: justify;">
-                    <p>2- If your account is on a Time-of-Use plan, you have the potential for annual savings by switching to a Standard Rate.</p>
+                    <p>3- If your account is on a Time-of-Use plan, you have the potential for annual savings by switching to a Standard Rate.</p>
                 </div>
             """, unsafe_allow_html=True)
 
             # Add Table for 2
-            st.table({"Description": ["Savings from Change Rate Recommendation"],
+            st.table({"Description": ["Savings from Change Rate"],
                     "Formula": ["(Present Rate - find another Rate) * Consumption_kWh ....."]})
 
             st.markdown("""
                 <div style="text-align: justify;">
-                    <p>3- If your account is on a Time-of-Use plan, you can reduce your bill by shifting usage from peak to off-peak hours. For example, we demonstrated an annual savings by reducing 10% of on-peak consumption and shifting it to off-peak hours.</p>
+                    <p>4- If your account is on a Time-of-Use plan, you can reduce your bill by shifting usage from peak to off-peak hours. For example, we demonstrated an annual savings by reducing 10% of on-peak consumption and shifting it to off-peak hours.</p>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -2190,7 +2345,7 @@ def app():
 
             st.markdown("""
                 <div style="text-align: justify;">
-                    <p>4- Demand charges are typically based on the maximum demand (in kW) recorded at a single meter during peak usage times. For companies with multiple meters, each meter is assessed individually for its peak demand.</p>
+                    <p>5- Demand charges are typically based on the maximum demand (in kW) recorded at a single meter during peak usage times. For companies with multiple meters, each meter is assessed individually for its peak demand.</p>
                     <p>By consolidating meters, the total demand is measured across the entire facility or company, which can potentially reduce the overall peak demand. This occurs because different parts of the facility may reach their peak usage at different times, smoothing out the overall demand. As a result, the combined peak demand could be lower than the sum of the individual peaks. For example, we estimate that this consolidation could reduce the bill by approximately 10%.</p>
                 </div>
             """, unsafe_allow_html=True)
@@ -2201,13 +2356,46 @@ def app():
 
             st.markdown("""
                 <div style="text-align: justify;">
-                    <p>5- If you are eligible for the 179D Commercial Buildings Energy-Efficiency Tax Deduction and choose to upgrade your windows, you could significantly reduce your energy consumption and costs. By improving your building's windows, you can achieve a reduction of at least 10% in cooling consumption, which typically accounts for about 30% to 50% of your building's total energy consumption. This not only enhances energy efficiency but also contributes to lower utility bills, making it a financially beneficial investment.</p>
+                    <p>6- If you are eligible for the 179D Commercial Buildings Energy-Efficiency Tax Deduction and choose to upgrade your windows, you could significantly reduce your energy consumption and costs. By improving your building's windows, you can achieve a reduction of at least 10% in cooling consumption, which typically accounts for about 30% to 50% of your building's total energy consumption. This not only enhances energy efficiency but also contributes to lower utility bills, making it a financially beneficial investment.</p>
                 </div>
             """, unsafe_allow_html=True)
 
             # Add Table for 5
             st.table({"Description": ["Savings from 179D Tax Deduction"],
                     "Formula": ["10% * Cooling_Consumption_kWh * Electricity_Rate"]})
+
+           
+
+            
+            # # If they use regular windows (1), calculate 10% energy reduction for tax savings
+            # if window_value == 1:
+            #     #st.write("179D Commercial Buildings Energy-Efficiency Tax Deduction:")
+            #     st.markdown("**1- 179D Commercial Buildings Energy-Efficiency Tax Deduction:**")
+
+            #     #st.write("If you are eligible for the 179D Commercial Buildings Energy-Efficiency Tax Deduction and choose to upgrade your windows, you could significantly reduce your energy consumption and costs. By improving your building's windows, you can achieve a reduction of at least 10% in cooling consumption, which typically accounts for about 30% to 50% of your building's total energy consumption. This not only enhances energy efficiency but also contributes to lower utility bills, making it a financially beneficial investment. ")
+            #     st.markdown("""
+            #     <div style="text-align: justify;">
+            #     If you are eligible for the 179D Commercial Buildings Energy-Efficiency Tax Deduction and choose to upgrade your windows, you could significantly reduce your energy consumption and costs. By improving your building's windows, you can achieve a reduction of at least 10% in cooling consumption, which typically accounts for about 30% to 50% of your building's total energy consumption. This not only enhances energy efficiency but also contributes to lower utility bills, making it a financially beneficial investment.
+            #     </div>
+            #     """, unsafe_allow_html=True)
+            #     # Calculate energy reduction due to potential tax eligibility
+            #     #energy_reduction = TOTAL_ENERGY_CONSUMPTION * 0.3*0.1  # 10% energy reduction
+            #     #annual_cost_energy_reduction = energy_reduction * Electricity_Rate  # cost saving
+
+
+            #     # Prepare the first table data for rates
+            #     data_Tax = {
+            #         "Description": ["Energy Reduction from Tax Benefit (10%)", "Annual Cost Savings from Energy Reduction"],
+            #         "Value": [f"{energy_reduction:.2f} kWh", f"${annual_cost_energy_reduction:.2f}"]
+            #     }
+
+            #     # Convert the data into a DataFrame for the first table
+            #     Tax_df = pd.DataFrame(data_Tax)
+
+            #     # Display the first table (Rates Information)
+                
+            #     st.table(Tax_df)
+
             
 
             
@@ -2255,11 +2443,12 @@ def app():
             axs1[1].bar(months111, total_demand_kw_12_months, color='#CC181F')
             axs1[1].set_ylabel("Total Demand KW")
             axs1[1].set_xlabel("Month")
-            axs1[1].set_title(f"Total Demand KW with Max, Min, and Expected Demand Lines")
+            #, and Expected Demand Lines
+            axs1[1].set_title(f"Total Demand KW with Max, Min")
             axs1[1].grid(True, axis='y', linestyle='--', alpha=0.7)
 
             # Add horizontal line for Max_Demand (expected)
-            axs1[1].axhline(y=Max_Demand, color='darkblue', linestyle='--', linewidth=3, label=f'Max Demand Expectation = {Max_Demand:.2f} kW')
+            #axs1[1].axhline(y=Max_Demand, color='darkblue', linestyle='--', linewidth=3, label=f'Max Demand Expectation = {Max_Demand:.2f} kW')
 
            
             # Add horizontal line for min demand
@@ -2299,14 +2488,15 @@ def app():
                     bars2 = ax.bar(x + width/2, Consumption_off_Peak_kwh, width, label='Consumption Off Peak kWh', color='#0EAD23')
 
                 # Calculate the ratio of on-peak to off-peak consumption
-                ratio = np.divide(Consumption_on_Peak_kwh, Consumption_off_Peak_kwh, out=np.zeros_like(Consumption_on_Peak_kwh), where=Consumption_off_Peak_kwh!=0)
+                ratio = np.divide(Consumption_on_Peak_kwh, Consumption_off_Peak_kwh, out=np.zeros_like(Consumption_on_Peak_kwh), where=Consumption_off_Peak_kwh != 0)
 
-                # Plot the ratio as a line
-                ax2 = ax.twinx()  # Create a secondary y-axis
-                ax2.plot(x, ratio, color='purple', marker='o', label='On-Peak/Off-Peak Ratio')
-                ax2.set_ylabel('On-Peak/Off-Peak Ratio')
+                # Normalize the ratio to match the scale of the consumption values
+                normalized_ratio = (ratio - np.min(ratio)) / (np.max(ratio) - np.min(ratio)) * (np.max(Consumption_on_Peak_kwh) - np.min(Consumption_on_Peak_kwh)) + np.min(Consumption_on_Peak_kwh)
 
-                # Add labels, title, and grid
+                # Plot the normalized ratio as a line
+                ax.plot(x, normalized_ratio, color='purple', marker='o', label='Normalized On-Peak/Off-Peak Ratio')
+                
+                # Set the labels for the axes
                 ax.set_xlabel("Month")
                 ax.set_ylabel("Consumption (kWh)")
                 ax.set_title("Comparison of Consumption On Peak and Off Peak with Ratio")
@@ -2318,13 +2508,11 @@ def app():
                 legend_elements = [
                     plt.Line2D([0], [0], color='#CC181F', lw=4, label='Consumption On Peak kWh'),
                     plt.Line2D([0], [0], color='#0EAD23', lw=4, label='Consumption Off Peak kWh'),
-                    #plt.Line2D([0], [0], color='blue', lw=2, linestyle='--', label=f'On Peak Electricity Price (${E_F_on_p:.2f})'),
-                    #plt.Line2D([0], [0], color='green', lw=2, linestyle='--', label=f'Off Peak Electricity Price (${E_F_off_p:.2f})'),
-                    plt.Line2D([0], [0], color='purple', lw=2, linestyle='-', marker='o', label='On-Peak/Off-Peak Ratio')
+                    plt.Line2D([0], [0], color='purple', lw=2, linestyle='-', marker='o', label='Normalized On-Peak/Off-Peak Ratio')
                 ]
 
                 # Show the legend with all elements
-                ax.legend(handles=legend_elements)
+                ax.legend(handles=legend_elements, loc='upper left')
 
                 # Adjust layout for better spacing
                 plt.tight_layout()
