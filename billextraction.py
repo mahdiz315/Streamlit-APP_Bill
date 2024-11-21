@@ -1869,8 +1869,9 @@ def app():
         with open(path, "rb") as file:
             data = file.read()
         return base64.b64encode(data).decode()
+    img_base64 = get_base64_image("assets/Logo-University-of-Miami.jpg")
 
-    img_base64 = get_base64_image(r"C:\Users\mxz881\Desktop\Logo-University-of-Miami.jpg")
+    #img_base64 = get_base64_image(r"C:\Users\mxz881\Desktop\Logo-University-of-Miami.jpg")
     html_code = f'<img src="data:image/jpeg;base64,{img_base64}" style="width:20%;">'
     st.markdown(html_code, unsafe_allow_html=True)
 
