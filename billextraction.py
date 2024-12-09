@@ -325,7 +325,7 @@ def extract_data(pdf_file):
                 #print(FPL_SolarTogether_credit)
           # Inside the extract_data function, after extracting all other values
     rate = str(extracted_data.get("Rate", "")).strip().upper()
-    valid_rates = ["GSLDT-1 GENERAL", "GSDT-1 GENERAL", "GSLD-1 GENERAL", "HLFT-2 HIGH","HLFT-2 HIGH LOAD FACTOR DEMAND TIME OF USE","HLFT-1 HIGH","OL-1 OUTDOOR"]
+    valid_rates = ["GSLDT-1 GENERAL", "GSDT-1 GENERAL", "GSLD-1 GENERAL", "HLFT-2 HIGH","HLFT-2 HIGH LOAD FACTOR DEMAND TIME OF USE","HLFT-1 HIGH","OL-1 OUTDOOR","SDTR-2B SEASONAL"]
 
     print(rate)
     if rate in valid_rates:
