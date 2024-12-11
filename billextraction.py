@@ -672,11 +672,11 @@ cumulative_data = {
     "Total Demand Charge": 0,
 }
 
-def extract_and_consolidate_data(uploaded_files, num_accounts, coefficients):
+def extract_and_consolidate_data(uploaded_files_by_account, num_accounts, coefficients):
     # List to hold data for all accounts
     data_by_account = []
 
-    for account_number in range(num_accounts):
+    for account_number, uploaded_files in uploaded_files_by_account.items():
         data_for_account = []
         months_present = []  # List to store months present for this account
 
@@ -1380,16 +1380,14 @@ def extract_and_consolidate_data(uploaded_files, num_accounts, coefficients):
             ####################################################################################################################
             months111 = consolidate_transpose_df.columns[:12] 
             ####################################################################################################################
-            Total_Comsuption_kwh1= consolidate_transpose_df.loc['Total Comsuption kwh']
-            Total_Comsuption_kwh=Total_Comsuption_kwh1.iloc[:12]
+            ##&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&////
             ####################################################################################################################
             Total_Energy_Fuel_Charge1= consolidate_transpose_df.loc['Total Energy & Fuel Charge ($)']
             Total_Energy_Fuel_Charge=Total_Energy_Fuel_Charge1.iloc[:12]
             ####################################################################################################################
             Demand_Rate1=consolidate_transpose_df.loc['Demand Rate']
             Demand_Rate=round(Demand_Rate1.loc['Sum'], 3)
-            print("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
-            print(Demand_Rate)
+            
             ####################################################################################################################
             Electricity_Rate1=consolidate_transpose_df.loc['Average $/kwh cost (Exc fees)']
             Electricity_Rate=round(Electricity_Rate1.loc['Sum'],3)
@@ -1757,7 +1755,10 @@ def extract_and_consolidate_data(uploaded_files, num_accounts, coefficients):
         
 
     print(f"Data saved to {excel_filename}")
-    
+    Total_Comsuption_kwh1= consolidate_transpose_df.loc['Total Comsuption kwh']
+    Total_Comsuption_kwh=Total_Comsuption_kwh1.iloc[:12]
+    print("emroooooooooooooooooooooooooooooooooooooooooo")
+    print(Total_Comsuption_kwh1)
 
     # Ensure that no implicit boolean values are being evaluated or returned
     if isinstance(extracted_data, bool):
@@ -1869,9 +1870,8 @@ def app():
         with open(path, "rb") as file:
             data = file.read()
         return base64.b64encode(data).decode()
-    img_base64 = get_base64_image("Logo-University-of-Miami.jpg")
 
-    #img_base64 = get_base64_image(r"C:\Users\mxz881\Desktop\Logo-University-of-Miami.jpg")
+    img_base64 = get_base64_image("Logo-University-of-Miami.jpg")
     html_code = f'<img src="data:image/jpeg;base64,{img_base64}" style="width:20%;">'
     st.markdown(html_code, unsafe_allow_html=True)
 
@@ -2066,15 +2066,15 @@ def app():
             consolidated_seasonal_consumption = {}
             accounts_usage = {}  # Dictionary to store usage per account
             Rate_account={}
-            for account_number, uploaded_files in uploaded_files_by_account.items():
+            #for account_number, uploaded_files in uploaded_files_by_account.items():
                 # Clear previous outputs from the placeholder
-                progress_placeholder.empty()
+               # progress_placeholder.empty()
 
                 
                 # Add error handling around the data extraction
-                try:
+            try:
                     st.write(f"Extracting data for Account {account_number}")
-                    excel_filename, seasonal_consumption, accounts_usage[account_number],total_demand_kw_12_months,Total_Comsuption_kwh,months111,Demand_Rate,Electricity_Rate, Total_Demand_Charge,Total_Energy_Fuel_Charge,Late_payment_charge,Rate_account[account_number],Consumption_on_Peak_kwh,Consumption_off_Peak_kwh,Recommendation_move_on_off,E_F_on_p,E_F_off_p = extract_and_consolidate_data(uploaded_files, num_accounts, coefficients)
+                    excel_filename, seasonal_consumption, accounts_usage[account_number],total_demand_kw_12_months,Total_Comsuption_kwh,months111,Demand_Rate,Electricity_Rate, Total_Demand_Charge,Total_Energy_Fuel_Charge,Late_payment_charge,Rate_account[account_number],Consumption_on_Peak_kwh,Consumption_off_Peak_kwh,Recommendation_move_on_off,E_F_on_p,E_F_off_p = extract_and_consolidate_data(uploaded_files_by_account, num_accounts, coefficients)
                     
                    
                     
@@ -2083,58 +2083,19 @@ def app():
                     # Explicitly check if there's an issue with how data is being returned or stored
                     assert isinstance(seasonal_consumption, dict), f"Error: Unexpected type for seasonal_consumption: {type(seasonal_consumption)}"
                     
-                except Exception as e:
+            except Exception as e:
                     st.error(f"Error in data extraction for Account {account_number}: {e}")
-                    continue
+            #continue
 
                 # Store seasonal consumption if it's valid
-                if seasonal_consumption:
+            if seasonal_consumption:
                     seasonal_consumption_all_accounts[account_number] = seasonal_consumption
 
                     # Consolidate seasonal consumption across accounts
                     for season, consumption in seasonal_consumption.items():
                         consolidated_seasonal_consumption[season] = consolidated_seasonal_consumption.get(season, 0) + consumption
 
-                    
-                    # Debugging step: plotting data for this account
-                    
-                    # Plot the seasonal data
-                    #if seasonal_consumption:
-                    #    st.write(f"Seasonal Total Consumption (kWh) for Account {account_number}:")
-                    #    seasons = list(seasonal_consumption.keys())
-                    #    consumption_values = list(seasonal_consumption.values())
-
-                        # Define colors for seasons
-                    #    colors = ['#ADD8E6', '#87CEEB', '#FFA07A', '#FF6347'] 
-
-                        # Plot the seasonal data
-                    #    fig, ax = plt.subplots()
-                    #    ax.bar(seasons, consumption_values, color=colors)
-                    #    ax.set_ylabel("Total Consumption (kWh)")
-                    #    ax.set_title(f"Seasonal Total Consumption for Account {account_number}")
-                    #    ax.grid(True, axis='y', linestyle='--', alpha=0.7)
-                        
-                    #    # Display plot
-                    #    st.pyplot(fig)
-
-                    # Plot accounts usage data if available
-                    #if account_number in accounts_usage:
-                    #    st.write(f"Total Demand KW (Usage) for Account {account_number}:")
-                    #    usage_data = accounts_usage[account_number]  # Assuming this is a NumPy array or list
-                    #    months = range(1, len(usage_data) + 1)  # Assuming usage_data has monthly values
-                        
-                        # If usage_data is a NumPy array or list, no need for `.values()`
-                    #    usage_values = list(usage_data)  # Directly convert the NumPy array to a list
-
-                    #    fig, ax = plt.subplots()
-                    #    ax.bar(months, usage_values, color='#FF6347')  # Plot the data
-                    #    ax.set_ylabel("Total Demand KW")
-                    #    ax.set_xlabel("Month")
-                    #    ax.set_title(f"Total Demand KW (Usage) for Account {account_number}")
-                    #    ax.grid(True, axis='y', linestyle='--', alpha=0.7)
-
-                    #    st.pyplot(fig)
-
+           
                     # Provide download button for the Excel file
                     with open(excel_filename, "rb") as file:
                         st.download_button(label=f"Download Excel File for Account {account_number}",
