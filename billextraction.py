@@ -1875,7 +1875,7 @@ def app():
     html_code = f'<img src="data:image/jpeg;base64,{img_base64}" style="width:20%;">'
     st.markdown(html_code, unsafe_allow_html=True)
 
-    st.title("Extractor Electricity Bills ")
+    st.title("Extractor Electricity Bills (Commercial and Industrial Building)")
 
     # Input for number of accounts
     num_accounts = st.number_input("Enter the number of accounts (folders):", min_value=1, step=1)
