@@ -330,7 +330,7 @@ def extract_data(pdf_file):
     print(rate)
     if rate in valid_rates:
         
-    #if "GSLDT-1 GENERAL" in rate or  "SDTR-2B SEASONAL DEMAND OPT B TIME OF USE" in rate or "GSDT-1 GENERAL" in rate or "GSLDT-1 GENERAL" in rate or "GSLD-1 GENERAL" in rate or "HLFT-2 HIGH LOAD FACTOR DEMAND TIME OF USE":
+    #if "GSLDT-1 GENERAL" in rate or  "GSLDT-1 GENERAL SVC LRG DEMAND TIME OF USE" in rate or "SDTR-2B SEASONAL DEMAND OPT B TIME OF USE" in rate or "GSDT-1 GENERAL" in rate or "GSLDT-1 GENERAL" in rate or "GSLD-1 GENERAL" in rate or "HLFT-2 HIGH LOAD FACTOR DEMAND TIME OF USE":
         print("rate hlfgfgf")
         non_fuel_off_peak = extracted_data.get("Non-fuel energy charge: off-peak", 0)
         fuel_off_peak = extracted_data.get("Fuel charge-Off-peak", 0)
