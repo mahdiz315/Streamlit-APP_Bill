@@ -2455,8 +2455,23 @@ def app():
                 ratio = np.divide(Consumption_on_Peak_kwh, Consumption_off_Peak_kwh, out=np.zeros_like(Consumption_on_Peak_kwh), where=Consumption_off_Peak_kwh != 0)
 
                 # Normalize the ratio to match the scale of the consumption values
-                normalized_ratio = (ratio - np.min(ratio)) / (np.max(ratio) - np.min(ratio)) * (np.max(Consumption_on_Peak_kwh) - np.min(Consumption_on_Peak_kwh)) + np.min(Consumption_on_Peak_kwh)
+                #normalized_ratio = (ratio - np.min(ratio)) / (np.max(ratio) - np.min(ratio)) * (np.max(Consumption_on_Peak_kwh) - np.min(Consumption_on_Peak_kwh)) + np.min(Consumption_on_Peak_kwh)
+                # Calculate the ratio of on-peak to off-peak consumption
+                ratio = np.divide(Consumption_on_Peak_kwh, Consumption_off_Peak_kwh, 
+                                  out=np.zeros_like(Consumption_on_Peak_kwh), where=Consumption_off_Peak_kwh != 0)
+                
+                # Ensure the denominator is not zero
+                ratio_range = np.max(ratio) - np.min(ratio)
+                
+                if ratio_range == 0:
+                    # If all values are the same, set a default normalized ratio to avoid division by zero
+                    normalized_ratio = np.full_like(ratio, 1)  # Or another reasonable default
+                else:
+                    normalized_ratio = (ratio - np.min(ratio)) / ratio_range * (np.max(Consumption_on_Peak_kwh) - np.min(Consumption_on_Peak_kwh)) + np.min(Consumption_on_Peak_kwh)
 
+
+
+                
                 # Plot the normalized ratio as a line
                 ax.plot(x, normalized_ratio, color='purple', marker='o', label='Normalized On-Peak/Off-Peak Ratio')
                 
