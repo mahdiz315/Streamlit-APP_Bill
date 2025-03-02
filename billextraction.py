@@ -2165,6 +2165,8 @@ def app():
             #    annual_saving_Demand_kw=round(max_demand -Max_Demand)
             #    demand_recommendation = f"$ {annual_saving_Demand:.2f}"
             #    Demand_payback="Immediate"
+            Energy_Reduction_demand_kWh = "NA"  # Default value
+
             if max_demand > average_demand:
                 #annual_saving_Demand= (max_demand -average_demand)*Demand_Rate
                 
